@@ -1,5 +1,5 @@
 const path = require("path");
-const CleanWebpackPlugin = require("clean-webpack-plugin");
+const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
 
@@ -16,6 +16,7 @@ module.exports = {
   output: {
     path: path.resolve(__dirname, "dist"),
     filename: "[name]/[name].js",
+    clean: true, // Webpack 5 built-in clean
   },
   devtool: "source-map",
   module: {
@@ -40,12 +41,12 @@ module.exports = {
       },
       {
         test: /\.css$/,
-        use: [{ loader: "style-loader" }, { loader: "css-loader" }],
+        use: ["style-loader", "css-loader"],
       },
     ],
   },
   plugins: [
-    new CleanWebpackPlugin(["dist"]),
+    new CleanWebpackPlugin(),
     new HtmlWebpackPlugin({
       title: "Panel - Tomato Clock",
       template: "src/panel/panel.html",
@@ -64,14 +65,13 @@ module.exports = {
       filename: "options/options.html",
       chunks: ["options"],
     }),
-
     new CopyWebpackPlugin({
       patterns: [
         {
           from: "./src/manifest.json",
           to: "./manifest.json",
-          transform: (content) => {
-            const jsonContent = JSON.parse(content);
+          transform(content) {
+            const jsonContent = JSON.parse(content.toString());
             jsonContent.version = version;
             return JSON.stringify(jsonContent, null, 2);
           },
@@ -80,4 +80,7 @@ module.exports = {
       ],
     }),
   ],
+  resolve: {
+    extensions: [".js"],
+  },
 };
